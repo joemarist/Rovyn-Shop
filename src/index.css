@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-brand: #A4D233;
+  --color-brand-dark: #8CB82A;
+  --color-brand-light: #C8E87A;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Barlow', sans-serif;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #A4D233 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #A4D233; border-radius: 2px; }
+
+.font-display {
+  font-family: 'Barlow Condensed', sans-serif;
+}

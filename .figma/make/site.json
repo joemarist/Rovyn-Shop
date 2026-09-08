@@ -1,0 +1,10 @@
+{
+  "description": "Offers a rugged, outdoors-inspired ecommerce platform featuring durable everyday gear with seamless browsing, secure checkout, and responsive design.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
