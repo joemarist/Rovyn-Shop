@@ -27,6 +27,17 @@ function getDb(): PDO
 {
     static $pdo = null;
     if ($pdo === null) {
+        // Connect without selecting a database yet, so we can create it if it doesn't exist
+        $bootstrapPdo = new PDO(
+            'mysql:host=' . DB_HOST . ';charset=utf8mb4',
+            DB_USER,
+            DB_PASS,
+            [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+        );
+        $bootstrapPdo->exec(
+            'CREATE DATABASE IF NOT EXISTS `' . DB_NAME . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
+        );
+
         $pdo = new PDO(
             'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
             DB_USER,
@@ -36,8 +47,38 @@ function getDb(): PDO
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ]
         );
+
+        ensureCoreSchema($pdo);
     }
     return $pdo;
+}
+
+function ensureCoreSchema(PDO $pdo): void
+{
+    $schemaPath = __DIR__ . '/../database/schema.sql';
+    if (!is_file($schemaPath)) {
+        return;
+    }
+
+    $schema = file_get_contents($schemaPath);
+    $schema = preg_replace('/CREATE DATABASE[^;]+;/i', '', $schema);
+    $schema = preg_replace('/USE\s+\w+\s*;/i', '', $schema);
+
+    $statements = array_filter(
+        array_map('trim', explode(';', $schema)),
+        fn($s) => $s !== ''
+    );
+
+    foreach ($statements as $statement) {
+        $lines = array_filter(
+            explode("\n", $statement),
+            fn($line) => trim($line) !== '' && !str_starts_with(ltrim($line), '--')
+        );
+        $sql = trim(implode("\n", $lines));
+        if ($sql !== '') {
+            $pdo->exec($sql);
+        }
+    }
 }
 
 function jsonResponse(array $data, int $code = 200): never

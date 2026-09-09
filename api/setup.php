@@ -1,7 +1,7 @@
 <?php
 /**
  * One-time database setup script.
- * Visit: http://localhost/RovynWebDesign/api/setup.php
+ * Visit: http://localhost/Rovyn-Shop/api/setup.php
  * Or run: php api/setup.php
  */
 

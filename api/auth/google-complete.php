@@ -20,7 +20,7 @@ $pdo = getDb();
 ensureVerificationSchema($pdo);
 
 $row = verifySetupToken($pdo, $setupToken, 'google_signup');
-if (!$row || $row['code'] !== $code) {
+if (!$row || !password_verify($code, $row['code_hash'])) {
     jsonResponse(['error' => 'Invalid or expired verification code.'], 400);
 }
 

@@ -11,7 +11,9 @@ export default function GoogleSignInButton({
   onError,
   text = 'continue_with',
 }: GoogleSignInButtonProps) {
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const clientId =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ??
+  '683085655451-o2rlo2us983qfhbhtka4pcffrd1uv20v.apps.googleusercontent.com';
 
   if (!clientId || clientId.includes('YOUR_GOOGLE_CLIENT_ID')) {
     return (

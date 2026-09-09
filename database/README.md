@@ -3,7 +3,7 @@
 ## Setup
 
 1. Start XAMPP (Apache + MySQL)
-2. Run: `http://localhost/RovynWebDesign/api/setup.php`
+2. Run: `http://localhost/Rovyn-Shop/api/setup.php`
 3. Restart the Vite dev server after changing `.env`
 
 ## Google Sign-In

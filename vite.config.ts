@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: 'http://localhost',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '/RovynWebDesign/api'),
+          rewrite: (path) => path.replace(/^\/api/, '/Rovyn-Shop/api'),
         },
       },
     },

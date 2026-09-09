@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/mailer.php';
 
 function generateVerificationCode(): string
 {
@@ -71,42 +72,43 @@ function storeVerificationCode(
     invalidatePreviousCodes($pdo, $email, $purpose);
 
     $code = generateVerificationCode();
+    $codeHash = password_hash($code, PASSWORD_DEFAULT);
     $expires = (new DateTime('+' . VERIFICATION_CODE_MINUTES . ' minutes'))->format('Y-m-d H:i:s');
 
     $stmt = $pdo->prepare(
-        'INSERT INTO email_verification_codes (email, code, purpose, setup_token, payload, expires_at)
+        'INSERT INTO email_verification_codes (email, code_hash, purpose, setup_token, payload, expires_at)
          VALUES (?, ?, ?, ?, ?, ?)'
     );
     $stmt->execute([
         $email,
-        $code,
+        $codeHash,
         $purpose,
         $setupToken,
         $payload !== null ? json_encode($payload) : null,
         $expires,
     ]);
 
-    return $code;
+    return $code; // plaintext — only used for emailing/dev display, never stored
 }
 
 function verifyEmailCode(PDO $pdo, string $email, string $code, string $purpose): ?array
 {
     $stmt = $pdo->prepare(
         'SELECT * FROM email_verification_codes
-         WHERE email = ? AND code = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW()
-         ORDER BY id DESC LIMIT 1'
+         WHERE email = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW()
+         ORDER BY id DESC'
     );
-    $stmt->execute([$email, $code, $purpose]);
-    $row = $stmt->fetch();
+    $stmt->execute([$email, $purpose]);
 
-    if (!$row) {
-        return null;
+    foreach ($stmt->fetchAll() as $row) {
+        if (password_verify($code, $row['code_hash'])) {
+            $pdo->prepare('UPDATE email_verification_codes SET used_at = NOW() WHERE id = ?')
+                ->execute([$row['id']]);
+            return $row;
+        }
     }
 
-    $pdo->prepare('UPDATE email_verification_codes SET used_at = NOW() WHERE id = ?')
-        ->execute([$row['id']]);
-
-    return $row;
+    return null;
 }
 
 function verifySetupToken(PDO $pdo, string $setupToken, string $purpose): ?array
@@ -120,37 +122,9 @@ function verifySetupToken(PDO $pdo, string $setupToken, string $purpose): ?array
     return $stmt->fetch() ?: null;
 }
 
-function sendVerificationEmail(string $email, string $code, string $subject, string $bodyIntro): bool
-{
-    $message = "$bodyIntro\n\nYour verification code is: $code\n\nThis code expires in "
-        . VERIFICATION_CODE_MINUTES . " minutes.\n\n— Rovyn";
-
-    $headers = 'From: ' . MAIL_FROM . "\r\n" .
-        'Reply-To: ' . MAIL_FROM . "\r\n" .
-        'Content-Type: text/plain; charset=UTF-8';
-
-    return @mail($email, $subject, $message, $headers);
-}
-
 function dispatchVerificationCode(string $email, string $code, string $purpose): array
 {
-    $subjects = [
-        'registration' => 'Verify your Rovyn account',
-        'google_signup' => 'Complete your Rovyn Google sign-up',
-        'password_reset' => 'Reset your Rovyn password',
-    ];
-    $intros = [
-        'registration' => 'Thanks for signing up with Rovyn!',
-        'google_signup' => 'Complete your account setup after signing in with Google.',
-        'password_reset' => 'You requested to reset your Rovyn password.',
-    ];
-
-    $sent = sendVerificationEmail(
-        $email,
-        $code,
-        $subjects[$purpose] ?? 'Rovyn verification code',
-        $intros[$purpose] ?? 'Your verification code:'
-    );
+    $sent = sendVerificationEmailViaSmtp($email, $code, '', $purpose);
 
     $result = ['emailSent' => $sent];
     if (APP_DEBUG) {
@@ -165,7 +139,7 @@ function ensureVerificationSchema(PDO $pdo): void
         "CREATE TABLE IF NOT EXISTS email_verification_codes (
           id INT AUTO_INCREMENT PRIMARY KEY,
           email VARCHAR(255) NOT NULL,
-          code VARCHAR(6) NOT NULL,
+          code_hash VARCHAR(255) NOT NULL,
           purpose ENUM('registration', 'google_signup', 'password_reset') NOT NULL,
           setup_token VARCHAR(128) NULL,
           payload JSON NULL,
@@ -176,6 +150,18 @@ function ensureVerificationSchema(PDO $pdo): void
           INDEX idx_setup_token (setup_token)
         ) ENGINE=InnoDB"
     );
+
+    // Migrate a table created by an older, plaintext-code version of this app
+    try {
+        $pdo->exec("ALTER TABLE email_verification_codes ADD COLUMN code_hash VARCHAR(255) NOT NULL DEFAULT ''");
+    } catch (Throwable) {
+        /* column already exists */
+    }
+    try {
+        $pdo->exec('ALTER TABLE email_verification_codes DROP COLUMN code');
+    } catch (Throwable) {
+        /* column already gone */
+    }
 
     try {
         $pdo->exec('ALTER TABLE users ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0');

@@ -4,7 +4,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/config.php';
 
 /**
  * Send an email verification / password reset code.
@@ -14,10 +14,10 @@ require_once __DIR__ . '/../config.php';
  * - google_signup
  * - password_reset
  */
-function sendVerificationEmail(
+function sendVerificationEmailViaSmtp(
     string $recipientEmail,
-    string $recipientName,
     string $code,
+    string $recipientName = '',
     string $purpose = 'registration'
 ): bool {
 
@@ -106,8 +106,9 @@ function sendVerificationEmail(
         /*
          * ESCAPE VALUES USED IN HTML
          */
+        $displayName = $recipientName !== '' ? $recipientName : 'there';
         $safeName = htmlspecialchars(
-            $recipientName,
+            $displayName,
             ENT_QUOTES,
             'UTF-8'
         );
@@ -259,7 +260,7 @@ function sendVerificationEmail(
          */
         $mail->AltBody =
             "{$title}\n\n" .
-            "Hello {$recipientName},\n\n" .
+            "Hello {$displayName},\n\n" .
             "{$message}\n\n" .
             "Verification Code: {$code}\n\n" .
             "This code expires in " .
