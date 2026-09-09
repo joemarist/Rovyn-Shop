@@ -47,7 +47,8 @@ function getDb(): PDO
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ]
         );
-
+        $pdo->exec("SET time_zone = '+08:00'");
+        
         ensureCoreSchema($pdo);
     }
     return $pdo;

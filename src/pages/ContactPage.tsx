@@ -41,10 +41,10 @@ export default function ContactPage({ navigate }: ContactPageProps) {
                 style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Contact Info</h2>
               <div className="space-y-5">
                 {[
-                  { icon: '📧', label: 'Email', value: 'hello@rovyn.com' },
-                  { icon: '📞', label: 'Phone', value: '+63 (02) 8888 9999' },
-                  { icon: '🕗', label: 'Hours', value: 'Mon–Fri, 9am–6pm PHT' },
-                  { icon: '📍', label: 'Address', value: '12F BGC Tower, Taguig City, Metro Manila' },
+                  { icon: '📧', label: 'Email', value: 'rovynshoppy@gmail.com' },
+                  { icon: '📞', label: 'Phone', value: '+63 976 246 6560' },
+                  { icon: '🕗', label: 'Hours', value: 'Mon–Sun, 24/7' },
+                  { icon: '📍', label: 'Address', value: 'Dara Village, Visayan Village, Tagum City, Davao del Norte' },
                 ].map((c) => (
                   <div key={c.label} className="flex gap-4">
                     <div className="w-10 h-10 bg-brand/15 rounded-xl flex items-center justify-center text-lg flex-shrink-0">

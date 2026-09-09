@@ -16,7 +16,7 @@ interface GoogleSetupPageProps {
 }
 
 export default function GoogleSetupPage({ navigate, redirectAfter = 'home' }: GoogleSetupPageProps) {
-  const pending = getPendingVerification();
+  const [pending, setPending] = useState(() => getPendingVerification());
   const { setUserFromLogin } = useAuth();
   const [code, setCode] = useState('');
   const [passwordMode, setPasswordMode] = useState<'random' | 'manual'>('random');
@@ -82,7 +82,13 @@ export default function GoogleSetupPage({ navigate, redirectAfter = 'home' }: Go
     try {
       const res = await api.resendCode(pending.email, 'google_signup');
       if (res.setupToken) {
-        savePendingVerification({ ...pending, setupToken: res.setupToken });
+        const updatedPending = {
+          ...pending!,
+          setupToken: res.setupToken,
+        };
+      
+        savePendingVerification(updatedPending);
+        setPending(updatedPending);
       }
       if (res.devCode) setDevCode(res.devCode);
     } catch (err) {

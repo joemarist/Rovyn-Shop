@@ -20,12 +20,22 @@ $pdo = getDb();
 ensureVerificationSchema($pdo);
 
 $row = verifySetupToken($pdo, $setupToken, 'google_signup');
-if (!$row || !password_verify($code, $row['code_hash'])) {
-    jsonResponse(['error' => 'Invalid or expired verification code.'], 400);
+
+if (!$row) {
+    jsonResponse([
+        'error' => 'Verification session is invalid or expired.',
+        'debug' => [
+            'setupTokenReceived' => $setupToken !== '',
+            'setupTokenLength' => strlen($setupToken),
+        ],
+    ], 400);
 }
 
-$pdo->prepare('UPDATE email_verification_codes SET used_at = NOW() WHERE id = ?')
-    ->execute([$row['id']]);
+if (!password_verify($code, $row['code_hash'])) {
+    jsonResponse([
+        'error' => 'Invalid verification code.',
+    ], 400);
+}
 
 $payload = json_decode($row['payload'] ?? '{}', true);
 if (!is_array($payload) || empty($payload['googleId'])) {
@@ -65,6 +75,12 @@ $insert->execute([
     $payload['avatarUrl'] ?? null,
     'customer',
 ]);
+
+$pdo->prepare(
+    'UPDATE email_verification_codes
+     SET used_at = NOW()
+     WHERE id = ?'
+)->execute([$row['id']]);
 
 $userId = (int) $pdo->lastInsertId();
 $stmt = $pdo->prepare('SELECT * FROM users WHERE id = ?');

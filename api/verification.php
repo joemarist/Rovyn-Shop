@@ -114,11 +114,21 @@ function verifyEmailCode(PDO $pdo, string $email, string $code, string $purpose)
 function verifySetupToken(PDO $pdo, string $setupToken, string $purpose): ?array
 {
     $stmt = $pdo->prepare(
-        'SELECT * FROM email_verification_codes
-         WHERE setup_token = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW()
-         ORDER BY id DESC LIMIT 1'
+        'SELECT *
+         FROM email_verification_codes
+         WHERE setup_token = ?
+           AND purpose = ?
+           AND used_at IS NULL
+           AND expires_at > NOW()
+         ORDER BY id DESC
+         LIMIT 1'
     );
-    $stmt->execute([$setupToken, $purpose]);
+
+    $stmt->execute([
+        trim($setupToken),
+        $purpose
+    ]);
+
     return $stmt->fetch() ?: null;
 }
 
