@@ -88,9 +88,9 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
     return html.replace(`<!-- ${slotName} -->`, content)
   }
 
-  const title = config.title ?? "Figma Make App"
-  const description = config.description ?? ''
-  const favicon = config.icons?.icon ?? ''
+  const title = config.title ?? "ROVYN — Built for Your Every Day"
+  const description = config.description ?? 'At ROVYN, we believe what you wear should move with you. From active days and workouts to casual moments and everyday adventures, our collection is designed to bring together comfort, style, and versatility. We curate modern sportswear and casual essentials made for people who want to look good, feel comfortable, and stay ready for whatever the day brings. ROVYN — Built for Your Every Day.'
+  const favicon = config.icons?.icon ?? './import/2.png'
   const socialImage = config.openGraph?.image ?? ''
   const language = sanitizeHtmlValue(config.language) || 'en'
   const googleAnalyticsId = sanitizeHtmlValue(config.analytics?.googleAnalyticsId)
