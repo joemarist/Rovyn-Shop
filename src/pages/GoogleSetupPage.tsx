@@ -13,9 +13,10 @@ import logoMark from '../imports/2.png';
 interface GoogleSetupPageProps {
   navigate: (page: Page) => void;
   redirectAfter?: Page;
+  onGeneratedPassword?: (password: string) => void;
 }
 
-export default function GoogleSetupPage({ navigate, redirectAfter = 'home' }: GoogleSetupPageProps) {
+export default function GoogleSetupPage({navigate, redirectAfter = 'home', onGeneratedPassword,}: GoogleSetupPageProps) {
   const [pending, setPending] = useState(() => getPendingVerification());
   const { setUserFromLogin } = useAuth();
   const [code, setCode] = useState('');
@@ -63,12 +64,14 @@ export default function GoogleSetupPage({ navigate, redirectAfter = 'home' }: Go
       });
       setToken(res.token);
       setUserFromLogin(res.user);
-      if (res.generatedPassword) setGeneratedPassword(res.generatedPassword);
+
       clearPendingVerification();
-      setDone(true);
-      if (!res.generatedPassword) {
-        navigate(redirectAfter);
+
+      if (res.generatedPassword) {
+        onGeneratedPassword?.(res.generatedPassword);
       }
+
+navigate(redirectAfter);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Setup failed');
     } finally {
