@@ -179,66 +179,6 @@ function AppContent() {
 
   const isAuthLayout = AUTH_PAGES.includes(page);
 
-  {generatedPassword && (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xl">
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-brand rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-            ✓
-          </div>
-  
-          <h2
-            className="font-display font-black text-2xl uppercase"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-          >
-            Account Created
-          </h2>
-  
-          <p className="text-black/50 text-sm mt-2">
-            You are now signed in. A password was automatically generated
-            for your account.
-          </p>
-        </div>
-  
-        <div className="mb-5">
-          <label className="block text-xs font-bold uppercase tracking-wide text-black/50 mb-2">
-            Your Generated Password
-          </label>
-  
-          <div className="flex gap-2">
-            <div className="flex-1 bg-stone-50 border border-black/10 rounded-xl px-4 py-3 font-mono text-sm break-all">
-              {generatedPassword}
-            </div>
-  
-            <button
-              type="button"
-              onClick={() => navigator.clipboard.writeText(generatedPassword)}
-              className="px-4 rounded-xl border border-black/10 font-bold text-sm hover:bg-stone-50"
-            >
-              Copy
-            </button>
-          </div>
-        </div>
-  
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
-          <p className="text-xs text-yellow-800">
-            <strong>Important:</strong> Save this password somewhere safe.
-            You can use it to sign in with your email and password in the future.
-          </p>
-        </div>
-  
-        <button
-          type="button"
-          onClick={() => setGeneratedPassword(null)}
-          className="w-full bg-brand text-black font-bold py-4 rounded-xl hover:bg-brand-dark uppercase text-sm"
-          style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-        >
-          Continue to Store
-        </button>
-      </div>
-    </div>
-  )}
-
   if (page === 'login') {
     return (
       <LoginPage
@@ -276,7 +216,76 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-full flex flex-col" style={{ fontFamily: "'Barlow', sans-serif" }}>
+    <>
+      {generatedPassword && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center px-4">
+          <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xl">
+  
+            <div className="text-center mb-6">
+              <div className="w-14 h-14 bg-brand rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                ✓
+              </div>
+  
+              <h2
+                className="font-display font-black text-2xl uppercase"
+                style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+              >
+                Account Created
+              </h2>
+  
+              <p className="text-black/50 text-sm mt-2">
+                Your account has been created successfully and you are now signed in.
+              </p>
+            </div>
+  
+            <div className="mb-5">
+              <label className="block text-xs font-bold uppercase tracking-wide text-black/50 mb-2">
+                Your Generated Password
+              </label>
+  
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={generatedPassword}
+                  readOnly
+                  className="flex-1 bg-stone-50 border border-black/10 rounded-xl px-4 py-3 font-mono text-sm"
+                />
+  
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigator.clipboard.writeText(generatedPassword)
+                  }
+                  className="px-4 rounded-xl border border-black/10 font-bold text-sm hover:bg-stone-50"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+  
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+              <p className="text-xs text-yellow-800">
+                <strong>Important:</strong> Save this password somewhere safe.
+                You can use it to sign in with your email and password later.
+              </p>
+            </div>
+  
+            <button
+              type="button"
+              onClick={() => setGeneratedPassword(null)}
+              className="w-full bg-brand text-black font-bold py-4 rounded-xl hover:bg-brand-dark uppercase text-sm"
+              style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+            >
+              Continue to Store
+            </button>
+          </div>
+        </div>
+      )}
+  
+      <div
+        className="min-h-full flex flex-col"
+        style={{ fontFamily: "'Barlow', sans-serif" }}
+      >
       {!isAuthLayout && (
         <Header page={page} navigate={navigate} cartCount={cartCount} authLoading={authLoading} />
       )}
@@ -303,8 +312,9 @@ function AppContent() {
         {page === 'contact' && <ContactPage navigate={navigate} />}
       </main>
       {!isAuthLayout && <Footer navigate={navigate} />}
-    </div>
-  );
+      </div>
+  </>
+);
 }
 
 export default function App() {

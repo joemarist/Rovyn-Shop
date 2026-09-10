@@ -95,9 +95,10 @@ $response = [
     'message' => 'Account created successfully.',
 ];
 
-if ($passwordMode === 'random' && APP_DEBUG) {
+if ($passwordMode === 'random') {
     $response['generatedPassword'] = $plainPassword;
-    $response['passwordNote'] = 'Save this password — you can use it to sign in with email and password.';
+    $response['passwordNote'] =
+        'Save this password — you can use it to sign in with email and password.';
 }
 
 jsonResponse($response, 201);

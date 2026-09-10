@@ -23,12 +23,10 @@ export default function GoogleSetupPage({navigate, redirectAfter = 'home', onGen
   const [passwordMode, setPasswordMode] = useState<'random' | 'manual'>('random');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [generatedPassword, setGeneratedPassword] = useState('');
   const [devCode, setDevCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [done, setDone] = useState(false);
 
   if (!pending || pending.purpose !== 'google_signup' || !pending.setupToken) {
     navigate('login');
@@ -63,15 +61,18 @@ export default function GoogleSetupPage({navigate, redirectAfter = 'home', onGen
         password: passwordMode === 'manual' ? password : undefined,
       });
       setToken(res.token);
-      setUserFromLogin(res.user);
+
+      const { user: authenticatedUser } = await api.me();
+
+      setUserFromLogin(authenticatedUser);
 
       clearPendingVerification();
 
       if (res.generatedPassword) {
-        onGeneratedPassword?.(res.generatedPassword);
+        onGeneratedPassword(res.generatedPassword);
       }
 
-navigate(redirectAfter);
+      navigate(redirectAfter);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Setup failed');
     } finally {
@@ -100,36 +101,6 @@ navigate(redirectAfter);
       setResending(false);
     }
   };
-
-  if (done && generatedPassword) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md bg-white rounded-2xl border border-black/8 p-8 shadow-sm text-center">
-          <h1
-            className="font-display font-black text-2xl uppercase mb-4"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-          >
-            Account Ready
-          </h1>
-          <p className="text-black/50 text-sm mb-4">
-            A secure password was generated for your account. Save it — you can use it to sign in
-            with email and password.
-          </p>
-          <div className="bg-stone-50 rounded-xl p-4 font-mono text-sm break-all mb-6 border border-black/8">
-            {generatedPassword}
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate(redirectAfter)}
-            className="w-full bg-brand text-black font-bold py-4 rounded-xl hover:bg-brand-dark uppercase text-sm"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
-          >
-            Continue to Store
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-12">
